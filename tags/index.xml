@@ -1,14 +1,60 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Tags on 猴子工程師筆記本</title>
+    <title>Tags on Lofairy&#39;s note</title>
     <link>https://lofairy.github.io/tags/</link>
-    <description>Recent content in Tags on 猴子工程師筆記本</description>
+    <description>Recent content in Tags on Lofairy&#39;s note</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
+    <lastBuildDate>Thu, 30 Aug 2018 18:29:27 +0800</lastBuildDate>
     
 	<atom:link href="https://lofairy.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Development</title>
+      <link>https://lofairy.github.io/tags/development/</link>
+      <pubDate>Thu, 30 Aug 2018 18:29:27 +0800</pubDate>
+      
+      <guid>https://lofairy.github.io/tags/development/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Go</title>
+      <link>https://lofairy.github.io/tags/go/</link>
+      <pubDate>Thu, 30 Aug 2018 18:29:27 +0800</pubDate>
+      
+      <guid>https://lofairy.github.io/tags/go/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Golang</title>
+      <link>https://lofairy.github.io/tags/golang/</link>
+      <pubDate>Thu, 30 Aug 2018 18:29:27 +0800</pubDate>
+      
+      <guid>https://lofairy.github.io/tags/golang/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Templates</title>
+      <link>https://lofairy.github.io/tags/templates/</link>
+      <pubDate>Thu, 30 Aug 2018 18:29:27 +0800</pubDate>
+      
+      <guid>https://lofairy.github.io/tags/templates/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Themes</title>
+      <link>https://lofairy.github.io/tags/themes/</link>
+      <pubDate>Thu, 30 Aug 2018 18:29:27 +0800</pubDate>
+      
+      <guid>https://lofairy.github.io/tags/themes/</guid>
+      <description></description>
+    </item>
     
   </channel>
 </rss>

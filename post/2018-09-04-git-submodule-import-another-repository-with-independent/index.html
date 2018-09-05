@@ -397,8 +397,9 @@
 
 <p>submodule 雖然依附在 dev，並且通常情況下只會跟著 dev 的專案 一起改變，但協作者仍有可能會從 upstream push commit。你可以用 <code>cd util; git fetch; git pull origin/magster</code> 進入 submodule 去做更新。或者是從 dev 專案目錄用 <code>git submodule update --remote --merge</code> 將 repo 的 commit 以 merge 的方式合併進 local submodule。</p>
 
-<p>以下是對照圖：
-with <code>--merge</code>
+<p>以下是對照圖：</p>
+
+<p>with <code>--merge</code>
 <img src="https://imgur.com/xwD7ies.jpg" alt="" /></p>
 
 <p>without <code>--merge</code>

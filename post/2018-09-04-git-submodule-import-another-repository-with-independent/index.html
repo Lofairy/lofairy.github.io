@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Git submodule : 導入其他 repository 並保持互相獨立 - Lofairy&#39;s note</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="Lofairy" />
+  <meta name="description" content="我們經常遇到這樣的問題 我有一個專案 repo 叫 dev；另一個 repo 叫 util。我想將 util 導入 dev 當作函式庫。 在以前，我是用 ide 的功能來導入其他專案到另一個專案" />
+
+  <meta name="keywords" content="Lofairy, coding, note" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.47.1" />
+
+
+<link rel="canonical" href="https://lofairy.github.io/post/2018-09-04-git-submodule-import-another-repository-with-independent/" />
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+<link href="/dist/jane.min.css?v=2.7.0" rel="stylesheet">
+
+
+
+
+<meta property="og:title" content="Git submodule : 導入其他 repository 並保持互相獨立" />
+<meta property="og:description" content="我們經常遇到這樣的問題 我有一個專案 repo 叫 dev；另一個 repo 叫 util。我想將 util 導入 dev 當作函式庫。 在以前，我是用 ide 的功能來導入其他專案到另一個專案" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lofairy.github.io/post/2018-09-04-git-submodule-import-another-repository-with-independent/" /><meta property="article:published_time" content="2018-09-04T10:50:00&#43;08:00"/>
+<meta property="article:modified_time" content="2018-09-04T10:50:00&#43;08:00"/>
+<meta itemprop="name" content="Git submodule : 導入其他 repository 並保持互相獨立">
+<meta itemprop="description" content="我們經常遇到這樣的問題 我有一個專案 repo 叫 dev；另一個 repo 叫 util。我想將 util 導入 dev 當作函式庫。 在以前，我是用 ide 的功能來導入其他專案到另一個專案">
+
+
+<meta itemprop="datePublished" content="2018-09-04T10:50:00&#43;08:00" />
+<meta itemprop="dateModified" content="2018-09-04T10:50:00&#43;08:00" />
+<meta itemprop="wordCount" content="1377">
+
+
+
+<meta itemprop="keywords" content="git,submodule," />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Git submodule : 導入其他 repository 並保持互相獨立"/>
+<meta name="twitter:description" content="我們經常遇到這樣的問題 我有一個專案 repo 叫 dev；另一個 repo 叫 util。我想將 util 導入 dev 當作函式庫。 在以前，我是用 ide 的功能來導入其他專案到另一個專案"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Lofairy&#39;s 程式筆記</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://lofairy.github.io/">Home</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://lofairy.github.io/post/">Archives</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://lofairy.github.io/tags/">Tags</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://lofairy.github.io/categories/">Categories</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://lofairy.github.io/about/">About</a>
+          
+        
+      </li>
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      Lofairy's 程式筆記
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+      <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://lofairy.github.io/">Home</a>
+          
+
+        
+
+      </li>
+    
+      <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://lofairy.github.io/post/">Archives</a>
+          
+
+        
+
+      </li>
+    
+      <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://lofairy.github.io/tags/">Tags</a>
+          
+
+        
+
+      </li>
+    
+      <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://lofairy.github.io/categories/">Categories</a>
+          
+
+        
+
+      </li>
+    
+      <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://lofairy.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">Git submodule : 導入其他 repository 並保持互相獨立</h1>
+      
+      <div class="post-meta">
+        <span class="post-time"> 2018-09-04 </span>
+        <div class="post-category">
+            <a href="https://lofairy.github.io/categories/git/"> GIT </a>
+            
+          </div>
+        <span class="more-meta"> 1377 words </span>
+          <span class="more-meta"> 3 min read </span>
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Table of Contents</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#我們經常遇到這樣的問題">我們經常遇到這樣的問題</a></li>
+<li><a href="#我認為的優點">我認為的優點</a></li>
+<li><a href="#我認為的缺點">我認為的缺點</a></li>
+<li><a href="#怎麼運作的">怎麼運作的?</a></li>
+<li><a href="#如何移除-submodule">如何移除 submodule</a></li>
+<li><a href="#git-subtree-是另一個選擇">git subtree 是另一個選擇</a></li>
+<li><a href="#reference">Reference:</a></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      
+
+<h2 id="我們經常遇到這樣的問題">我們經常遇到這樣的問題</h2>
+
+<p>我有一個專案 repo 叫 dev；另一個 repo 叫 util。我想將 util 導入 dev 當作函式庫。
+在以前，我是用 ide 的功能來導入其他專案到另一個專案。
+那我能不能用 git 幫我達成這個需求呢？答案是：YES.</p>
+
+<p>git submodule 允許你在 dev 加入 util，並且兩個專案的 commit 是獨立的。當 util 有新的 commit，dev 的 commit 紀錄的是 util 的 commit id。</p>
+
+<p><img src="https://imgur.com/QITwnYG.jpg" alt="" /></p>
+
+<h2 id="我認為的優點">我認為的優點</h2>
+
+<ul>
+<li>parent 專案只會紀錄 submodule 的 commit id，放在 repo 的程式不包含 submodule 的程式碼。</li>
+<li>parent 與 submodule 專案的 commit 獨立，歷史紀錄明確分立。</li>
+</ul>
+
+<h2 id="我認為的缺點">我認為的缺點</h2>
+
+<ul>
+<li>操作不當可能會導致 local submodule 與 remote 脫離依賴，沒有辦法追朔的 commit 會很麻煩。</li>
+<li>submodule 會有額外的 metadata，像是 <code>.gitmodule</code>。</li>
+</ul>
+
+<!-- more -->
+
+<h2 id="怎麼運作的">怎麼運作的?</h2>
+
+<p>本章節內容是基於<a href="http://dan.mccloy.info/2015/06/11/Git-submodules/">這裡</a>修改的，看得懂英文的朋友建議看這一篇。</p>
+
+<blockquote>
+<p>範例：我有一個專案 repo 叫 dev；另一個 repo 叫 util。我想將 util 導入 dev 當作函式庫。</p>
+</blockquote>
+
+<ol>
+<li><p><strong>建立兩個 repos，並推上 github</strong>. 在開發的 repo 叫 dev；另一個 repo 叫 util，它在 dev 的裡面。</p></li>
+
+<li><p><strong>建立 submodule</strong>. 在 dev 的根目錄，使用 <code>git submodule add git@github.com:lofairy/util.git</code> 建立submodule關聯。這時產生的 submodule 是 utils HEAD 的「斷頭狀態」，util 並不真的存在於 dev branch，在 util 所做的任何 commit 也不會被 dev 追蹤。</p></li>
+
+<li><p><strong>在 dev repos 加入以下設定</strong>：</p>
+
+<ul>
+<li><code>git config status.submodulesummary 1</code> - 執行 <code>git status</code> 內容會包含 submodule 的改變。</li>
+<li><code>git config diff.submodule log</code> - 執行 <code>git diff</code> 會顯示 submodule 的 commit 訊息。</li>
+</ul></li>
+
+<li><p><strong>將 local submodule 與 repo 的 branch 綁定依賴</strong>. 對 submodule 的資料夾做 checkout就行了，實際執行就是 <code>cd util; git checkout master</code>。現在你對 util 的改變能夠追蹤了。如果沒有執行這一步，你對 util 做的改變將只是個沒有任何依賴的「快照」，push 後不會顯示在 github 的 commit 裡。</p></li>
+</ol>
+
+<blockquote>
+<p>2, 4 步驟可以用 <code>git submodule add -b master git@github.com:lofairy/util.git</code> 整合起來。</p>
+</blockquote>
+
+<ol>
+<li><p><strong>修改 submodule</strong>：</p>
+
+<ul>
+<li><p><strong>update</strong>。最簡單的方法就是 <code>cd util; git fetch; git pull origin/magster</code> 進入 submodule 去做更新；或也可以 <code>git submodule update --remote --merge</code> 使用submodule 的方式來更新。
+&gt; <code>--merge</code> 會是必要的參數，如果少了它，local submodule 將會產並切換到一個沒父沒母的 commit id。</p></li>
+
+<li><p><strong>commit</strong>。記得修改完後要 commit，不然 dev 會不知道 util 有被修改過。</p></li>
+</ul></li>
+</ol>
+
+<p>submodule 雖然依附在 dev，並且通常情況下只會跟著 dev 的專案 一起改變，但協作者仍有可能會從 upstream push commit。你可以用 <code>cd util; git fetch; git pull origin/magster</code> 進入 submodule 去做更新。或者是從 dev 專案目錄用 <code>git submodule update --remote --merge</code> 將 repo 的 commit 以 merge 的方式合併進 local submodule。</p>
+
+<p>以下是對照圖：
+with <code>--merge</code>
+<img src="https://imgur.com/xwD7ies.jpg" alt="" /></p>
+
+<p>without <code>--merge</code>
+<img src="https://imgur.com/YUfMwGN.jpg" alt="" /></p>
+
+<ol>
+<li><strong>PUSH</strong>. 一般的 <code>git push</code> 不會 push submodule 的 commit，需要加上特別的參數。</li>
+<li><code>git push --recurse-submodules=check</code> 在 push dev 前檢查是否有 submodule commit 沒有 push (如果有，git push 就會警告你並停止動作)</li>
+<li><code>git push --recurse-submodules=on-demand</code> 讓 git 幫你在 push dev 前自動 push submodule commit。</li>
+</ol>
+
+<h2 id="如何移除-submodule">如何移除 submodule</h2>
+
+<p>移除的方法稍微麻煩了點，以下是由 <a href="https://stackoverflow.com/questions/1260748/how-do-i-remove-a-submodule">stack overflow</a> 文章分享的方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></pre></td>
+<td class="lntd">
+<pre class="chroma">1. Delete the relevant section from the .gitmodules file.
+2. Stage the .gitmodules changes git add .gitmodules
+3. Delete the relevant section from .git/config.
+4. Run git rm --cached path_to_submodule (no trailing slash).
+5. Run rm -rf .git/modules/path_to_submodule
+6. Commit git commit -m &#34;Removed submodule &lt;name&gt;&#34;
+7. Delete the now untracked submodule files
+8. rm -rf path_to_submodule</pre></td></tr></table>
+</div>
+</div>
+<p>以上面的範例來說：</p>
+
+<ul>
+<li>run <code>git submodule deinit util -f</code> 清除 <code>.git/config</code> 與 submodule (util)) 相- 關段落，並清除 submodule 資料夾的程式。如果要一次清除，將 util 改成 &ndash;all 即可。</li>
+<li>確認 .gitmodules 與 .git/config 與 submodule (util) 相關的段落是否還存在。如果是，移除他們。</li>
+<li>stash .gitmodules.</li>
+<li>run <code>git rm -rf --cached util</code></li>
+<li>run <code>git commit -m &quot;remove submodule util&quot;</code></li>
+<li>run <code>rm -rf util</code></li>
+<li>run <code>rm -rf .git/modules/util</code></li>
+</ul>
+
+<p>P.S.當你在 repo add submodule 後，會增加一些檔案跟設定：
+- <code>.git/module/(submodule name)</code> 儲存了完整的 submodule repo 內容。
+- <code>.git/config</code> 會儲存包含目前 repo所擁有的 submodule 資訊
+- <code>.gitsubmodule</code> 會儲存目前 repo所擁有的 submodule 資訊</p>
+
+<h2 id="git-subtree-是另一個選擇">git subtree 是另一個選擇</h2>
+
+<p>git submodule 是 git 以前官方推薦管理子項目的功能。從 git 1.5.2 開始，git 推薦使用 git subtree，雖然不具備依賴功能，卻能達到我們的要求。等我研究完後，會再發一篇文分享。</p>
+
+<hr />
+
+<h2 id="reference">Reference:</h2>
+
+<blockquote>
+<ul>
+<li><a href="http://dan.mccloy.info/2015/06/11/Git-submodules/">Git submodules</a></li>
+<li><a href="https://www.jianshu.com/p/491609b1c426">【Git】子模块：一个仓库包含另一个仓库</a></li>
+<li><a href="https://stackoverflow.com/questions/1260748/how-do-i-remove-a-submodule">How do I remove a submodule?</a></li>
+</ul>
+</blockquote>
+
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">Lofairy</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">2018-09-04</span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">License</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://lofairy.github.io/tags/git/">git</a>
+          <a href="https://lofairy.github.io/tags/submodule/">submodule</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    Show Disqus Comments
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'lofairy-github-io';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:your@email.com" rel="me noopener" class="iconfont icon-email"
+        title="email" target="_blank">
+      </a>
+      <a href="https://www.facebook.com/yirong.lin.9" rel="me noopener" class="iconfont icon-facebook"
+        title="facebook" target="_blank">
+      </a>
+      <a href="https://www.linkedin.com/in/%E6%98%93%E8%9E%8D-%E6%9E%97-91ab82156" rel="me noopener" class="iconfont icon-linkedin"
+        title="linkedin" target="_blank">
+      </a>
+      <a href="https://github.com/lofairy" rel="me noopener" class="iconfont icon-github"
+        title="github" target="_blank">
+      </a>
+  <a href="https://lofairy.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml" class="iconfont icon-rss"
+    title="rss" target="_blank">
+  </a>
+  </div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span><span class="author">
+        Lofairy
+        
+      </span></span>
+
+  
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+<script type="text/javascript" src="/dist/jane.min.js?v=2.7.0"></script>
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

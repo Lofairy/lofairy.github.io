@@ -26,13 +26,150 @@
     </item>
     
     <item>
-      <title>First</title>
-      <link>https://lofairy.github.io/post/first/</link>
-      <pubDate>Thu, 30 Aug 2018 18:29:27 +0800</pubDate>
+      <title>Git submodule : 導入其他 repository 並保持互相獨立</title>
+      <link>https://lofairy.github.io/post/2018-09-04-git-submodule-import-another-repository-with-independent/</link>
+      <pubDate>Tue, 04 Sep 2018 10:50:00 +0800</pubDate>
       
-      <guid>https://lofairy.github.io/post/first/</guid>
+      <guid>https://lofairy.github.io/post/2018-09-04-git-submodule-import-another-repository-with-independent/</guid>
       
-        <description>&lt;p&gt;this is a line.&lt;/p&gt;
+        <description>
+
+&lt;h2 id=&#34;我們經常遇到這樣的問題&#34;&gt;我們經常遇到這樣的問題&lt;/h2&gt;
+
+&lt;p&gt;我有一個專案 repo 叫 dev；另一個 repo 叫 util。我想將 util 導入 dev 當作函式庫。
+在以前，我是用 ide 的功能來導入其他專案到另一個專案。
+那我能不能用 git 幫我達成這個需求呢？答案是：YES.&lt;/p&gt;
+
+&lt;p&gt;git submodule 允許你在 dev 加入 util，並且兩個專案的 commit 是獨立的。當 util 有新的 commit，dev 的 commit 紀錄的是 util 的 commit id。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://imgur.com/QITwnYG.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;我認為的優點&#34;&gt;我認為的優點&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;parent 專案只會紀錄 submodule 的 commit id，放在 repo 的程式不包含 submodule 的程式碼。&lt;/li&gt;
+&lt;li&gt;parent 與 submodule 專案的 commit 獨立，歷史紀錄明確分立。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;我認為的缺點&#34;&gt;我認為的缺點&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;操作不當可能會導致 local submodule 與 remote 脫離依賴，沒有辦法追朔的 commit 會很麻煩。&lt;/li&gt;
+&lt;li&gt;submodule 會有額外的 metadata，像是 &lt;code&gt;.gitmodule&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- more --&gt;
+
+&lt;h2 id=&#34;怎麼運作的&#34;&gt;怎麼運作的?&lt;/h2&gt;
+
+&lt;p&gt;本章節內容是基於&lt;a href=&#34;http://dan.mccloy.info/2015/06/11/Git-submodules/&#34;&gt;這裡&lt;/a&gt;修改的，看得懂英文的朋友建議看這一篇。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;範例：我有一個專案 repo 叫 dev；另一個 repo 叫 util。我想將 util 導入 dev 當作函式庫。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;建立兩個 repos，並推上 github&lt;/strong&gt;. 在開發的 repo 叫 dev；另一個 repo 叫 util，它在 dev 的裡面。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;建立 submodule&lt;/strong&gt;. 在 dev 的根目錄，使用 &lt;code&gt;git submodule add git@github.com:lofairy/util.git&lt;/code&gt; 建立submodule關聯。這時產生的 submodule 是 utils HEAD 的「斷頭狀態」，util 並不真的存在於 dev branch，在 util 所做的任何 commit 也不會被 dev 追蹤。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;在 dev repos 加入以下設定&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;git config status.submodulesummary 1&lt;/code&gt; - 執行 &lt;code&gt;git status&lt;/code&gt; 內容會包含 submodule 的改變。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;git config diff.submodule log&lt;/code&gt; - 執行 &lt;code&gt;git diff&lt;/code&gt; 會顯示 submodule 的 commit 訊息。&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;將 local submodule 與 repo 的 branch 綁定依賴&lt;/strong&gt;. 對 submodule 的資料夾做 checkout就行了，實際執行就是 &lt;code&gt;cd util; git checkout master&lt;/code&gt;。現在你對 util 的改變能夠追蹤了。如果沒有執行這一步，你對 util 做的改變將只是個沒有任何依賴的「快照」，push 後不會顯示在 github 的 commit 裡。&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;2, 4 步驟可以用 &lt;code&gt;git submodule add -b master git@github.com:lofairy/util.git&lt;/code&gt; 整合起來。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;修改 submodule&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;update&lt;/strong&gt;。最簡單的方法就是 &lt;code&gt;cd util; git fetch; git pull origin/magster&lt;/code&gt; 進入 submodule 去做更新；或也可以 &lt;code&gt;git submodule update --remote --merge&lt;/code&gt; 使用submodule 的方式來更新。
+&amp;gt; &lt;code&gt;--merge&lt;/code&gt; 會是必要的參數，如果少了它，local submodule 將會產並切換到一個沒父沒母的 commit id。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;commit&lt;/strong&gt;。記得修改完後要 commit，不然 dev 會不知道 util 有被修改過。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;submodule 雖然依附在 dev，並且通常情況下只會跟著 dev 的專案 一起改變，但協作者仍有可能會從 upstream push commit。你可以用 &lt;code&gt;cd util; git fetch; git pull origin/magster&lt;/code&gt; 進入 submodule 去做更新。或者是從 dev 專案目錄用 &lt;code&gt;git submodule update --remote --merge&lt;/code&gt; 將 repo 的 commit 以 merge 的方式合併進 local submodule。&lt;/p&gt;
+
+&lt;p&gt;以下是對照圖：
+with &lt;code&gt;--merge&lt;/code&gt;
+&lt;img src=&#34;https://imgur.com/xwD7ies.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;without &lt;code&gt;--merge&lt;/code&gt;
+&lt;img src=&#34;https://imgur.com/YUfMwGN.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;PUSH&lt;/strong&gt;. 一般的 &lt;code&gt;git push&lt;/code&gt; 不會 push submodule 的 commit，需要加上特別的參數。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;git push --recurse-submodules=check&lt;/code&gt; 在 push dev 前檢查是否有 submodule commit 沒有 push (如果有，git push 就會警告你並停止動作)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;git push --recurse-submodules=on-demand&lt;/code&gt; 讓 git 幫你在 push dev 前自動 push submodule commit。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;如何移除-submodule&#34;&gt;如何移除 submodule&lt;/h2&gt;
+
+&lt;p&gt;移除的方法稍微麻煩了點，以下是由 &lt;a href=&#34;https://stackoverflow.com/questions/1260748/how-do-i-remove-a-submodule&#34;&gt;stack overflow&lt;/a&gt; 文章分享的方法：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;1. Delete the relevant section from the .gitmodules file.
+2. Stage the .gitmodules changes git add .gitmodules
+3. Delete the relevant section from .git/config.
+4. Run git rm --cached path_to_submodule (no trailing slash).
+5. Run rm -rf .git/modules/path_to_submodule
+6. Commit git commit -m &amp;#34;Removed submodule &amp;lt;name&amp;gt;&amp;#34;
+7. Delete the now untracked submodule files
+8. rm -rf path_to_submodule&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;以上面的範例來說：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;run &lt;code&gt;git submodule deinit util -f&lt;/code&gt; 清除 &lt;code&gt;.git/config&lt;/code&gt; 與 submodule (util)) 相- 關段落，並清除 submodule 資料夾的程式。如果要一次清除，將 util 改成 &amp;ndash;all 即可。&lt;/li&gt;
+&lt;li&gt;確認 .gitmodules 與 .git/config 與 submodule (util) 相關的段落是否還存在。如果是，移除他們。&lt;/li&gt;
+&lt;li&gt;stash .gitmodules.&lt;/li&gt;
+&lt;li&gt;run &lt;code&gt;git rm -rf --cached util&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;run &lt;code&gt;git commit -m &amp;quot;remove submodule util&amp;quot;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;run &lt;code&gt;rm -rf util&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;run &lt;code&gt;rm -rf .git/modules/util&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;P.S.當你在 repo add submodule 後，會增加一些檔案跟設定：
+- &lt;code&gt;.git/module/(submodule name)&lt;/code&gt; 儲存了完整的 submodule repo 內容。
+- &lt;code&gt;.git/config&lt;/code&gt; 會儲存包含目前 repo所擁有的 submodule 資訊
+- &lt;code&gt;.gitsubmodule&lt;/code&gt; 會儲存目前 repo所擁有的 submodule 資訊&lt;/p&gt;
+
+&lt;h2 id=&#34;git-subtree-是另一個選擇&#34;&gt;git subtree 是另一個選擇&lt;/h2&gt;
+
+&lt;p&gt;git submodule 是 git 以前官方推薦管理子項目的功能。從 git 1.5.2 開始，git 推薦使用 git subtree，雖然不具備依賴功能，卻能達到我們的要求。等我研究完後，會再發一篇文分享。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;reference&#34;&gt;Reference:&lt;/h2&gt;
+
+&lt;blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://dan.mccloy.info/2015/06/11/Git-submodules/&#34;&gt;Git submodules&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.jianshu.com/p/491609b1c426&#34;&gt;【Git】子模块：一个仓库包含另一个仓库&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://stackoverflow.com/questions/1260748/how-do-i-remove-a-submodule&#34;&gt;How do I remove a submodule?&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
 </description>
       
     </item>
